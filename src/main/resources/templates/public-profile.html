@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Booking - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content public-profile-body">
+    <div class="booking-container">
+        <!-- Host Info Sidebar -->
+        <div class="host-info-panel">
+            <div class="host-avatar" style="width: 64px; height: 64px; border-radius: 50%; overflow: hidden; background-color: #f0f4f8; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+                <img th:if="${host.profilePicture}" th:src="${host.profilePicture}" alt="Host Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                <span th:unless="${host.profilePicture}" th:text="${host.name.substring(0,1).toUpperCase()}" style="font-size: 1.5rem; font-weight: 600; color: var(--primary-color);">H</span>
+            </div>
+            <h2 class="host-name" th:text="${host.name}" style="margin-top: 0;">John Doe</h2>
+            <p th:if="${host.welcomeMessage}" th:text="${host.welcomeMessage}" style="font-size: 0.85rem; color: #666; margin-bottom: 1.5rem; line-height: 1.4;"></p>
+
+            
+            <!-- Conditional Display based on Event Type presence -->
+            <div th:if="${eventType != null}">
+                <h1 class="event-name" th:text="${eventType.title}">Event Title</h1>
+                <div class="event-details">
+                    <div class="detail-item">
+                        <span class="icon">🕒</span> <span th:text="${eventType.durationMinutes} + ' min'">30 min</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="icon" th:text="${eventType.location == 'Phone Call' ? '📞' : (eventType.location == 'In-person' ? '📍' : '💻')}">💻</span>
+                        <span th:text="${eventType.location}">Google Meet</span>
+                        <div th:if="${eventType.locationDetails}" style="font-size: 0.85rem; color: #666; margin-left: 24px; margin-top: 4px;">
+                            <span th:if="${eventType.location == 'Google Meet'}">Link will be provided upon booking.</span>
+                            <span th:unless="${eventType.location == 'Google Meet'}" th:text="${eventType.locationDetails}">Details</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="event-desc" th:text="${eventType.description}">Event Description</p>
+            </div>
+            <div th:unless="${eventType != null}">
+                <h1 class="event-name">All Availability</h1>
+                <p class="event-desc">Select a time to book with <span th:text="${host.name}">Host</span>.</p>
+            </div>
+        </div>
+
+        <!-- Booking Selection Area (Slots) -->
+        <div class="booking-selection-panel" th:if="${eventType != null}">
+            
+            <div th:if="${error}" class="alert alert-danger" style="color: red; margin-bottom: 1rem; padding: 10px; background-color: #ffe6e6; border: 1px solid red; border-radius: 4px;" th:text="${error}">
+                Error message
+            </div>
+            
+            <div th:unless="${error}">
+                <!-- OWNER VIEW: SHOW BOOKINGS INSTEAD OF SELECTION -->
+                <div th:if="${isOwner}" class="owner-view">
+                    <h2>Bookings for this Event</h2>
+                    <div class="scheduled-events-list">
+                        <div class="event-card" th:each="b : ${eventBookings}" style="margin-bottom: 1rem; border-left: 4px solid var(--primary-color);">
+                            <div class="card-body" style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3 th:text="${b.date_time}" style="margin: 0; font-size: 1rem;">Time</h3>
+                                    <p style="margin: 5px 0; font-size: 0.9rem;">
+                                        <strong>Invitee:</strong> <span th:text="${bookingInviteeNames[b.userId]} ?: 'Guest'">Name</span>
+                                    </p>
+                                    <p style="margin: 5px 0; font-size: 0.9rem;">
+                                        <strong>Location:</strong> <span th:text="${b.location}">Location</span>
+                                        <span th:if="${b.locationDetails}">
+                                           (<a th:if="${b.locationDetails.contains('http')}" th:href="${b.locationDetails}" th:text="${b.locationDetails}" target="_blank" style="color: var(--primary-color);">Link</a><span th:unless="${b.locationDetails.contains('http')}" th:text="${b.locationDetails}">Details</span>)
+                                        </span>
+                                    </p>
+                                    <p th:if="${b.message}" th:text="${b.message}" style="font-size: 0.8rem; color: #666; font-style: italic;">Message</p>
+                                </div>
+                                <div class="status-badge" style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem;">
+                                    <span th:text="${b.status}">SCHEDULED</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${eventBookings.empty}" class="empty-state" style="padding: 2rem; border: 1px dashed #ccc; text-align: center; color: #666;">
+                            No one has booked this event type yet.
+                        </div>
+                    </div>
+                    <div style="margin-top: 2rem; padding: 1rem; background: #fffde7; border-radius: 8px; font-size: 0.9rem;">
+                        <strong>Note:</strong> You are seeing this because you are the owner of this event. Others will see the time selection options.
+                    </div>
+                </div>
+
+                <div th:unless="${isOwner}">
+                    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                        <h2 style="margin-bottom: 0.5rem; color: #333;">Request this Meeting</h2>
+
+                        <!-- Recurring event info card -->
+                        <div style="margin: 1.5rem 0; padding: 1.5rem; background: #f0f7ff; border-radius: 10px; border-left: 4px solid #0069ff;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <span style="font-size: 1.5rem;">🔁</span>
+                                <span style="font-weight: 700; color: #0069ff; font-size: 1rem;">Recurring — Every Weekday (Mon–Fri)</span>
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem; color: #444;">
+                                <tr>
+                                    <td style="padding: 4px 0; font-weight: 600; width: 120px;">📅 From</td>
+                                    <td th:text="${eventType.startDate}">2026-03-09</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0; font-weight: 600;">📅 To</td>
+                                    <td th:text="${eventType.endDate != null and eventType.endDate != '' ? eventType.endDate : eventType.startDate}">2026-03-20</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0; font-weight: 600;">🕒 Time</td>
+                                    <td>
+                                        <span th:text="${eventType.startTime}">09:00</span> – 
+                                        <span th:text="${eventType.endTime}">10:00</span>
+                                        (<span th:text="${eventType.durationMinutes}">30</span> min)
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.5;">
+                            This is a recurring meeting. By requesting, you're signing up for all weekday sessions in the above window.
+                            The host will confirm your request.
+                        </p>
+
+                        <a th:href="@{/{username}/book(username=${host.username}, datetime=${eventType.startDate + ' ' + eventType.startTime}, eventTypeId=${eventType.id})}"
+                           class="btn btn-primary" 
+                           style="display: block; width: 100%; padding: 14px; font-size: 1.05rem; font-weight: 600; text-align: center; text-decoration: none; border-radius: 8px; background: #0069ff; color: white; box-sizing: border-box;">
+                            ✅ Request Recurring Meeting
+                        </a>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+        
+        <div class="booking-selection-panel" th:unless="${eventType != null}">
+            <h2>Select an Event Type from the left to view available times.</h2>
+        </div>
+    </div>
+</main>
+</body>
+</html>

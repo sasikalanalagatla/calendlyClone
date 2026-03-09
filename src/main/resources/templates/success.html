@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Booking Confirmed</title>
+</head>
+<body>
+<main class="main-content flex-center">
+    <div class="success-card">
+        <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none" class="checkmark">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h1>You are scheduled</h1>
+        <p class="success-desc">A calendar invitation has been sent to your email address.</p>
+        
+        <div class="success-details">
+            <div class="detail-row">
+                <strong>Event</strong>
+                <span>30 Minute Meeting</span>
+            </div>
+            <div class="detail-row">
+                <strong>Host</strong>
+                <span th:text="${host.name}">John Doe</span>
+            </div>
+            <div class="detail-row">
+                <strong>When</strong>
+                <span th:text="${booking.date_time}">Time</span>
+            </div>
+            <div class="detail-row">
+                <strong>Invitee</strong>
+                <span th:text="${inviteeName}">Name</span>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a th:href="@{/}" class="btn btn-outline">Back to Home</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

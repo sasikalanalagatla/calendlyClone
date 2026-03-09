@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Poll Results: <span th:text="${poll.title}">Poll</span> - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content">
+    <div class="results-container">
+        <header style="margin-bottom: 2rem;">
+            <a th:href="@{/dashboard(userId=${session.userId})}" class="btn btn-outline" style="margin-bottom: 1.5rem; padding: 0.5rem 1rem;">← Back to Dashboard</a>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1 th:text="${poll.title}" style="font-size: 2rem; margin-bottom: 0.5rem;">Poll Results</h1>
+                    <p th:text="${poll.description}" style="color: var(--text-gray); max-width: 600px;">Description</p>
+                </div>
+                <div class="status-badge" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;" 
+                     th:text="${poll.status}" 
+                     th:style="${poll.status == 'OPEN' ? 'background: #e8f5e9; color: #2e7d32;' : 'background: #f5f5f5; color: #757575;'}">OPEN</div>
+            </div>
+            
+            <div th:if="${poll.status == 'OPEN'}" style="margin-top: 1.5rem; padding: 1rem; background: #fff8e1; border-left: 4px solid #ffa000; border-radius: var(--radius-sm);">
+                <strong>Invite link:</strong> 
+                <span th:text="${#httpServletRequest.requestURL.toString().replace('/results', '/vote')}" style="background: white; padding: 2px 8px; border-radius: 4px; border: 1px solid #ffe082; margin-left: 10px;">http://localhost:8080/polls/1/vote</span>
+            </div>
+        </header>
+
+        <h2 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Voting Options</h2>
+        <div class="options-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            <div th:each="opt : ${options}" class="card option-result-card" style="padding: 1.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-lg); position: relative; background: white; transition: var(--transition);">
+                <div class="vote-count" title="Total Available Votes" style="position: absolute; top: 1.5rem; right: 1.5rem; background: var(--primary-color); color: white; border-radius: 8px; padding: 4px 12px; font-weight: 700; font-size: 1.1rem;">
+                    <span th:text="${voteCounts[opt.id]}">0</span>
+                </div>
+                
+                <h3 th:text="${opt.dateTime}" style="margin-bottom: 0.5rem; color: var(--text-dark);">Time Slot</h3>
+                <p style="color: var(--text-gray); font-size: 0.9rem; margin-bottom: 1.5rem;" th:text="${opt.durationMinutes} + ' min duration'">30 min</p>
+
+                <div class="voters-list" style="margin-bottom: 2rem; min-height: 100px;">
+                    <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); letter-spacing: 0.05em; margin-bottom: 0.75rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px;">Available Voters</h4>
+                    <ul style="list-style: none; padding-left: 0;">
+                        <li th:each="v : ${votesByOption[opt.id]}" style="font-size: 0.95rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                             <span style="color: var(--success-color);">✓</span> <span th:text="${v.inviteeName}">Name</span> <span th:text="'(' + ${v.inviteeEmail} + ')'" style="color: var(--text-light); font-size: 0.8rem;">Email</span>
+                        </li>
+                        <li th:if="${votesByOption[opt.id].empty}" style="color: var(--text-light); font-size: 0.9rem; font-style: italic; text-align: center; padding: 1rem 0;">No votes yet.</li>
+                    </ul>
+                </div>
+
+                <form th:if="${poll.status == 'OPEN'}" th:action="@{/polls/{id}/confirm(id=${poll.id})}" method="post">
+                    <input type="hidden" name="optionId" th:value="${opt.id}">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Confirm this time</button>
+                </form>
+                <div th:unless="${poll.status == 'OPEN'}" style="text-align: center; color: var(--text-light); font-size: 0.9rem; padding: 0.5rem; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                    Poll Closed
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<style>
+    .option-result-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+</style>
+</body>
+</html>

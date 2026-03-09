@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Welcome to Calendly</title>
+</head>
+<body>
+<main class="main-content">
+    <div class="hero">
+        <h1>Easy scheduling <span>ahead</span></h1>
+        <p>Calendly is your hub for scheduling meetings professionally and efficiently, eliminating the hassle of back-and-forth emails so you can get back to work.</p>
+        
+        <div class="auth-buttons" style="margin-top: 2rem;">
+            <a th:href="@{/register}" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">Get started for free</a>
+            <p style="margin-top: 1rem; color: var(--text-gray);">Already have an account? <a th:href="@{/login}">Log in</a></p>
+        </div>
+    </div>
+</main>
+</body>
+</html>

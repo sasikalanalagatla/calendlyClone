@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Create Meeting Poll - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content">
+    <div class="card" style="max-width: 600px; margin: 0 auto; padding: 2rem; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+        <header style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+            <h1 style="font-size: 1.5rem; color: var(--text-dark);">Create a Meeting Poll</h1>
+            <p style="color: var(--text-gray); font-size: 0.9rem;">Suggest multiple times and let participants vote.</p>
+        </header>
+
+        <form action="/polls/create" method="post">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="title" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Poll Title *</label>
+                <input type="text" id="title" name="title" required class="form-control" placeholder="e.g. Team Sync" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="description" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Description</label>
+                <textarea id="description" name="description" rows="3" class="form-control" placeholder="What is this meeting about?" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="duration" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Duration (minutes)</label>
+                <input type="number" id="duration" name="duration" value="30" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            </div>
+
+            <div id="options-container" style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Suggested Times *</label>
+                <div class="time-option" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="datetime-local" name="dateTime" required style="flex: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                    <button type="button" class="btn btn-outline" onclick="if(document.querySelectorAll('.time-option').length > 1) this.parentElement.remove()" style="padding: 0.5rem 0.75rem;">✕</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-outline" onclick="addOption()" style="width: 100%; margin-bottom: 2rem; border-style: dashed;">+ Add another time option</button>
+
+            <div class="form-actions" style="display: flex; gap: 1rem;">
+                <a th:href="@{/dashboard(userId=${user.id})}" class="btn btn-outline" style="flex: 1;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="flex: 2;">Create Poll</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function addOption() {
+            const container = document.getElementById('options-container');
+            const div = document.createElement('div');
+            div.className = 'time-option';
+            div.style.display = 'flex';
+            div.style.gap = '0.5rem';
+            div.style.marginBottom = '0.5rem';
+            div.innerHTML = `
+                <input type="datetime-local" name="dateTime" required style="flex: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                <button type="button" class="btn btn-outline" onclick="this.parentElement.remove()" style="padding: 0.5rem 0.75rem;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+    </script>
+</main>
+</body>
+</html>

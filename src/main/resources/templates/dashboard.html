@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Dashboard - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content">
+    <div class="dashboard-header" style="align-items: flex-start;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="profile-pic-container" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background-color: #f0f4f8; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+                <img th:if="${user.profilePicture}" th:src="${user.profilePicture}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                <span th:unless="${user.profilePicture}" th:text="${user.name.substring(0,1).toUpperCase()}" style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">U</span>
+            </div>
+            <div>
+                <h1 style="margin: 0; font-size: 1.5rem; font-weight: 600;">My Link</h1>
+                <div class="user-link" style="margin-top: 4px;">
+                    <a th:href="@{'/' + ${user.username}}" target="_blank" style="font-size: 0.9rem; color: var(--text-gray);">calendly.com/<span th:text="${user.username}"></span></a>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-outline btn-sm copy-link-btn" th:attr="data-url='http://localhost:8080/' + ${user.username}">Copy link</button>
+    </div>
+
+    
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('event-types')">Event Types</button>
+        <button class="tab" onclick="switchTab('scheduled-events')">Scheduled Events</button>
+    </div>
+
+    <div id="event-types-section" class="tab-section">
+        <div class="dashboard-content">
+            <div class="toolbar">
+                <div class="search-sort">
+                    <input type="text" placeholder="Filter" class="search-input">
+                </div>
+                <button id="newEventBtn" class="btn btn-primary">+ New Event Type</button>
+            </div>
+
+            <div class="event-cards-grid">
+                <!-- Iterate over real Event Types -->
+                <div class="event-card" th:each="et : ${eventTypes}">
+                    <div class="card-header">
+                        <div class="event-actions" style="display: flex; gap: 5px; margin-left: auto;">
+                            <form th:action="@{/event-types/delete}" method="post" onsubmit="return confirm('Are you sure you want to delete this event type?');">
+                                <input type="hidden" name="eventTypeId" th:value="${et.id}">
+                                <input type="hidden" name="userId" th:value="${user.id}">
+                                <button type="submit" class="icon-btn" title="Delete/Settings">⚙️</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="event-title" th:text="${et.title}">15 Minute Meeting</h3>
+                        <p class="event-meta">
+                            <span th:text="${et.durationMinutes}">15</span> mins, 
+                            <span th:text="${et.type == 'GROUP' ? 'Group (Max ' + et.maxParticipants + ')' : 'One-on-One'}">One-on-One</span>
+                        </p>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                            <a th:href="@{'/' + ${user.username} + '?eventTypeId=' + ${et.id}}" class="view-booking-link">View booking page</a>
+                            <button class="btn btn-outline btn-sm copy-link-btn" th:attr="data-url='http://localhost:8080/' + ${user.username} + '?eventTypeId=' + ${et.id}">Copy link</button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="toggle-switch active">
+                            <span class="slider"></span>
+                        </div>
+                    </div>
+                </div>
+                
+            <div th:if="${eventTypes.empty}" class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <h2>You don't have any event types yet.</h2>
+                    <p>You'll want to create an event type to allow people to book with you.</p>
+                </div>
+            </div>
+
+            <!-- Meeting Polls Section -->
+            <div style="margin-top: 4rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                <div class="toolbar">
+                    <h2 style="font-size: 1.25rem;">Meeting Polls</h2>
+                    <a href="/polls/create" class="btn btn-outline btn-sm">+ New Meeting Poll</a>
+                </div>
+                
+                <div class="event-cards-grid" style="margin-top: 1.5rem;">
+                    <div class="event-card" th:each="p : ${meetingPolls}" style="border-top: 4px solid #673ab7; background: white;">
+                        <div class="card-body" style="padding: 1.5rem;">
+                            <h3 class="event-title" th:text="${p.title}" style="margin-bottom: 0.5rem; font-size: 1.1rem;">Meeting Poll</h3>
+                            <p class="event-meta" th:text="${p.description}" style="font-size: 0.85rem; color: var(--text-gray); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Description</p>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-top: 1.5rem;">
+                                <a th:href="@{/polls/{id}/results(id=${p.id})}" class="btn btn-primary btn-sm" style="font-size: 0.75rem;">View Results</a>
+                                <button class="btn btn-outline btn-sm copy-link-btn" 
+                                        th:attr="data-url='http://localhost:8080/polls/' + ${p.id} + '/vote'" 
+                                        style="font-size: 0.75rem;">Copy Vote Link</button>
+                            </div>
+                        </div>
+                        <div class="card-footer" style="padding: 10px 1.5rem; background: #fcfcfc; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                            <span th:text="${p.status}" 
+                                  th:style="${p.status == 'OPEN' ? 'color: var(--success-color)' : 'color: var(--text-light)'}"
+                                  style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">OPEN</span>
+                            <span style="font-size: 0.7rem; color: #999;" th:text="${#calendars.format(p.created_at, 'dd MMM')}">01 Jan</span>
+                        </div>
+                    </div>
+                    
+                    <div th:if="${meetingPolls.empty}" class="empty-state" style="grid-column: 1 / -1; padding: 3rem; border: 2px dashed #eee; background: #fafafa; border-radius: 12px; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                        <h3 style="font-size: 1rem; color: #666;">No meeting polls yet.</h3>
+                        <p style="font-size: 0.85rem; color: #999;">Create a poll to find the best time for a group meeting.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="scheduled-events-section" class="tab-section" style="display: none;">
+        <div class="dashboard-content">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">Meetings You're Hosting</h2>
+                <div class="scheduled-events-list">
+                    <div class="event-card" th:each="b : ${hostedBookings}" style="margin-bottom: 1rem; border-left: 4px solid var(--primary-color);">
+                        <div class="card-body" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 class="event-title" th:text="${b.date_time}" style="margin: 0; font-size: 1.1rem;">Date/Time</h3>
+                                <p class="event-meta" style="margin: 5px 0;">
+                                    <strong>Invitee:</strong> <span th:text="${userNames[b.userId]} ?: 'Guest'">User</span> | 
+                                    <strong>Location:</strong> <span th:text="${b.location}">Google Meet</span>
+                                    <span th:if="${b.locationDetails}">
+                                        (<a th:if="${b.locationDetails.contains('http')}" th:href="${b.locationDetails}" th:text="${b.locationDetails}" target="_blank" style="color: var(--primary-color);">Link</a><span th:unless="${b.locationDetails.contains('http')}" th:text="${b.locationDetails}">Details</span>)
+                                    </span>
+                                </p>
+                                <p th:if="${b.message}" th:text="${b.message}" style="font-size: 0.85rem; color: var(--text-gray); font-style: italic; margin: 10px 0 0 0; padding-top: 10px; border-top: 1px solid #f0f0f0;">Message...</p>
+                                
+                                <div th:if="${b.status == 'PENDING'}" style="margin-top: 15px; display: flex; gap: 10px;">
+                                    <form th:action="@{/bookings/respond}" method="post" style="display: inline;">
+                                        <input type="hidden" name="bookingId" th:value="${b.id}">
+                                        <input type="hidden" name="userId" th:value="${user.id}">
+                                        <input type="hidden" name="action" value="ACCEPT">
+                                        <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                                    </form>
+                                    <form th:action="@{/bookings/respond}" method="post" style="display: inline;">
+                                        <input type="hidden" name="bookingId" th:value="${b.id}">
+                                        <input type="hidden" name="userId" th:value="${user.id}">
+                                        <input type="hidden" name="action" value="DECLINE">
+                                        <button type="submit" class="btn btn-outline btn-sm">Decline</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="status-badge" th:style="'background: ' + (${b.status == 'PENDING'} ? '#fff3e0' : (${b.status == 'ACCEPTED'} ? '#e8f5e9' : '#ffe6e6')) + '; color: ' + (${b.status == 'PENDING'} ? '#ef6c00' : (${b.status == 'ACCEPTED'} ? '#2e7d32' : '#c62828')) + '; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;'">
+                                <span th:text="${b.status}">PENDING</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${hostedBookings.empty}" class="empty-state" style="padding: 3rem; border: 2px dashed var(--border-color); text-align: center;">
+                        <p>No meetings hosted yet. Share your link to get booked!</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 3rem 0;">
+
+            <div>
+                <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">Meetings You've Joined</h2>
+                <div class="scheduled-events-list">
+                    <div class="event-card" th:each="b : ${invitedBookings}" style="margin-bottom: 1rem; border-left: 4px solid var(--success-color);">
+                        <div class="card-body" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 class="event-title" th:text="${b.date_time}" style="margin: 0; font-size: 1.1rem;">Date/Time</h3>
+                                <p class="event-meta" style="margin: 5px 0;">
+                                    <strong>Host:</strong> <span th:text="${userNames[b.mentorId]} ?: 'Host'">Host</span> | 
+                                    <strong>Location:</strong> <span th:text="${b.location}">Google Meet</span>
+                                    <span th:if="${b.locationDetails}">
+                                        (<a th:if="${b.locationDetails.contains('http')}" th:href="${b.locationDetails}" th:text="${b.locationDetails}" target="_blank" style="color: var(--primary-color);">Link</a><span th:unless="${b.locationDetails.contains('http')}" th:text="${b.locationDetails}">Details</span>)
+                                    </span>
+                                </p>
+                                <p th:if="${b.message}" th:text="${b.message}" style="font-size: 0.85rem; color: var(--text-gray); font-style: italic; margin: 10px 0 0 0; padding-top: 10px; border-top: 1px solid #f0f0f0;">Message...</p>
+                            </div>
+                            <div class="status-badge" style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                <span th:text="${b.status}">SCHEDULED</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${invitedBookings.empty}" class="empty-state" style="padding: 3rem; border: 2px dashed var(--border-color); text-align: center;">
+                        <p>You haven't joined any meetings yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Drawer Overlay -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+
+    <!-- Create Event Type Drawer -->
+    <div id="createEventDrawer" class="drawer">
+        <form th:action="@{/event-types}" method="post" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="drawer-header">
+                <h2>New Event Type</h2>
+                <button type="button" id="closeDrawerBtn" class="drawer-close">&times;</button>
+            </div>
+            
+            <!-- Mock auth hidden field -->
+            <input type="hidden" name="userId" th:value="${user.id}">
+            
+            <div class="drawer-body">
+                <div class="form-group">
+                    <label for="title">Event Name</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. 30 Minute Meeting" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <select id="location" name="location" class="form-control" onchange="updateLocationDetails()">
+                        <option value="Google Meet">Google Meet</option>
+                        <option value="Phone Call">Phone Call</option>
+                        <option value="In-person">In-person Meeting</option>
+                    </select>
+                </div>
+
+                <div id="locationDetailsGroup" class="form-group" style="display: none;">
+                    <label id="locationDetailsLabel" for="locationDetails">Details</label>
+                    <input type="text" id="locationDetails" name="locationDetails" class="form-control" placeholder="">
+                </div>
+
+                <div class="form-group">
+                    <label>Event Type</label>
+                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
+                            <input type="radio" name="eventTypeCategory" value="ONE_ON_ONE" checked onclick="toggleGroupLimit(false)">
+                            One-on-One
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
+                            <input type="radio" name="eventTypeCategory" value="GROUP" onclick="toggleGroupLimit(true)">
+                            Group (One-to-Many)
+                        </label>
+                    </div>
+                </div>
+
+                <div id="groupLimitGroup" class="form-group" style="display: none;">
+                    <label for="maxParticipants">Max Participants</label>
+                    <input type="number" id="maxParticipants" name="maxParticipants" class="form-control" value="30" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label>Timing</label>
+                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                        <label style="font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="timingType" value="SINGLE" checked onchange="updateTimingFields()"> Specific Date
+                        </label>
+                        <label style="font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="timingType" value="RANGE" onchange="updateTimingFields()"> Date Range
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="startDateLabel" for="startDate">Date</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" required>
+                </div>
+
+                <div id="endDateGroup" class="form-group" style="display: none;">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control">
+                </div>
+
+                <div class="form-row" style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="startTime">Start Time</label>
+                        <input type="time" id="startTime" name="startTime" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label for="endTime">End Time</label>
+                        <input type="time" id="endTime" name="endTime" class="form-control" required>
+                    </div>
+                </div>
+                
+                
+                <div class="form-group">
+                    <label for="description">Description/Instructions</label>
+                    <textarea id="description" name="description" class="form-control" rows="4" placeholder="Write a summary and any details your invitee should know about the meeting."></textarea>
+                </div>
+            </div>
+            
+            <div class="drawer-footer">
+                <button type="button" id="cancelDrawerBtn" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save & Continue</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // Global functions for inline onchange handlers
+        function updateLocationDetails() {
+            const location = document.getElementById('location').value;
+            const detailsGroup = document.getElementById('locationDetailsGroup');
+            const detailsLabel = document.getElementById('locationDetailsLabel');
+            const detailsInput = document.getElementById('locationDetails');
+
+            if (location === 'Phone Call') {
+                detailsGroup.style.display = 'block';
+                detailsLabel.innerText = 'Mobile Number';
+                detailsInput.placeholder = 'e.g. +1 234 567 890';
+                detailsInput.required = true;
+            } else if (location === 'In-person') {
+                detailsGroup.style.display = 'block';
+                detailsLabel.innerText = 'Meeting Place / Address';
+                detailsInput.placeholder = 'e.g. Starbucks, Main St.';
+                detailsInput.required = true;
+            } else {
+                detailsGroup.style.display = 'none';
+                detailsInput.required = false;
+                detailsInput.value = '';
+            }
+        }
+
+        function updateTimingFields() {
+            const timingType = document.querySelector('input[name="timingType"]:checked').value;
+            const endDateGroup = document.getElementById('endDateGroup');
+            const endDateInput = document.getElementById('endDate');
+            const startDateLabel = document.getElementById('startDateLabel');
+
+            if (timingType === 'RANGE') {
+                endDateGroup.style.display = 'block';
+                endDateInput.required = true;
+                startDateLabel.innerText = 'Start Date';
+            } else {
+                endDateGroup.style.display = 'none';
+                endDateInput.required = false;
+                endDateInput.value = '';
+                startDateLabel.innerText = 'Date';
+            }
+        }
+
+        window.toggleGroupLimit = function(show) {
+            const groupLimitGroup = document.getElementById('groupLimitGroup');
+            const maxInput = document.getElementById('maxParticipants');
+            if (show) {
+                groupLimitGroup.style.display = 'block';
+                maxInput.required = true;
+            } else {
+                groupLimitGroup.style.display = 'none';
+                maxInput.required = false;
+            }
+        };
+
+        window.toggleCustomDuration = function(val) {
+            const customGroup = document.getElementById('customDurationGroup');
+            const customInput = document.getElementById('customDuration');
+            if (val === 'custom') {
+                customGroup.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customGroup.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
+            }
+        };
+
+        window.switchTab = function(tabName) {
+            const sections = document.querySelectorAll('.tab-section');
+            const tabs = document.querySelectorAll('.tab');
+            
+            sections.forEach(s => s.style.display = 'none');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            const targetSection = document.getElementById(tabName + '-section');
+            if (targetSection) targetSection.style.display = 'block';
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+        };
+
+        function initForm() {
+            updateLocationDetails();
+            updateTimingFields();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const newEventBtn = document.getElementById('newEventBtn');
+            const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+            const cancelDrawerBtn = document.getElementById('cancelDrawerBtn');
+            const drawer = document.getElementById('createEventDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+    
+            function openDrawer() {
+                drawer.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            }
+    
+            function closeDrawer() {
+                drawer.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+    
+            if (newEventBtn) newEventBtn.addEventListener('click', openDrawer);
+            if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+            if (cancelDrawerBtn) cancelDrawerBtn.addEventListener('click', closeDrawer);
+            if (overlay) overlay.addEventListener('click', closeDrawer);
+    
+            // Copy link functionality
+            const copyBtns = document.querySelectorAll('.copy-link-btn');
+            copyBtns.forEach(copyBtn => {
+                copyBtn.addEventListener('click', () => {
+                    const url = copyBtn.getAttribute('data-url');
+                    navigator.clipboard.writeText(url).then(() => {
+                        const originalText = copyBtn.innerText;
+                        copyBtn.innerText = 'Copied!';
+                        setTimeout(() => {
+                            copyBtn.innerText = originalText;
+                        }, 2000);
+                    });
+                });
+            });
+
+            initForm();
+        });
+    </script>
+    <!-- One-time Google Calendar Prompt Modal -->
+    <div id="calendarPromptModal" class="modal" th:if="${!googleConnected and !user.calendarPromptDone}" style="display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+            <h2 style="margin-bottom: 1rem;">Connect Google Calendar?</h2>
+            <p style="color: #666; margin-bottom: 2rem; line-height: 1.5;">
+                Sync your meetings to Google Calendar automatically and send invites to guests.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="/oauth2/authorization/google" class="btn btn-primary" style="width: 100%; text-decoration: none; padding: 12px;">Yes, Connect Now</a>
+                <form th:action="@{/dashboard/dismiss-calendar-prompt}" method="post">
+                    <input type="hidden" name="userId" th:value="${user.id}">
+                    <button type="submit" class="btn btn-outline" style="width: 100%; border-color: #ccc; color: #666;">Maybe Later / Don't Ask Again</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

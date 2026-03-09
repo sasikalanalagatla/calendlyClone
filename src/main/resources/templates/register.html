@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Sign Up - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content flex-center">
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Sign up with Calendly</h2>
+            <p class="auth-subtitle">Create a free account</p>
+            
+            <form th:action="@{/register}" method="post" class="auth-form">
+                <input type="hidden" name="redirectUrl" th:if="${redirectUrl != null}" th:value="${redirectUrl}" />
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" class="form-control" required placeholder="name@domain.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Create a password">
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-submit">Sign up</button>
+
+                <div style="margin: 1.5rem 0; text-align: center; color: var(--text-light); position: relative;">
+                    <span style="background: white; padding: 0 10px; position: relative; z-index: 1;">OR</span>
+                    <hr style="position: absolute; top: 50%; left: 0; right: 0; border: 0; border-top: 1px solid var(--border-color); margin: 0;">
+                </div>
+
+                <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline" style="width: 100%; display: flex; gap: 10px; align-items: center; justify-content: center;">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" alt="Google" style="width: 18px; height: 18px;">
+                    Sign up with Google
+                </a>
+            </form>
+            
+            <div class="auth-footer">
+                Already have an account? <a th:href="@{/login(redirectUrl=${redirectUrl})}">Log in</a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

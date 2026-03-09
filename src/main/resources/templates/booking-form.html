@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Booking Details - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content public-profile-body">
+    <div class="booking-container">
+        <!-- Host Info Sidebar -->
+        <div class="host-info-panel">
+            <a th:href="@{'/' + ${host.username}}" class="back-link">← Back</a>
+            <h2 class="host-name" th:text="${host.name}">John Doe</h2>
+
+            <div th:if="${eventType != null}">
+                <h1 class="event-name" th:text="${eventType.title}">Event Title</h1>
+                <h3>Event Details</h3>
+                <p><strong>Date & Time:</strong> <span th:text="${datetime}">Datetime</span></p>
+                <div th:if="${eventType != null}">
+                    <p><strong>Duration:</strong> <span th:text="${eventType.durationMinutes}">30</span> mins</p>
+                    <p><strong>Location:</strong> <span th:text="${eventType.location}">Location</span></p>
+                    <p th:if="${eventType.locationDetails}">
+                        <strong>Details:</strong> 
+                        <a th:if="${#strings.startsWith(eventType.locationDetails, 'http')}" th:href="${eventType.locationDetails}" th:text="${eventType.locationDetails}" target="_blank">Link</a>
+                        <span th:unless="${#strings.startsWith(eventType.locationDetails, 'http')}" th:text="${eventType.locationDetails}">Details</span>
+                    </p>
+                </div>
+            </div>
+            <div th:unless="${eventType != null}">
+                <h1 class="event-name">Confirmed Time</h1>
+                <div class="event-details">
+                    <div class="detail-item" style="color: var(--text-gray);">
+                        <span class="icon">�</span> Duration varies
+                    </div>
+                </div>
+            </div>
+
+            <div class="event-details" style="margin-top: 1rem;">
+                <div class="detail-item time-item">
+                    <span class="icon" style="color: var(--success-color);">📅</span> 
+                    <span th:text="${datetime}">09:00 AM</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Area -->
+        <div class="booking-selection-panel">
+            <h2>Enter Details</h2>
+            <div th:if="${error}" class="alert alert-danger" style="color: red; margin-bottom: 1rem; padding: 10px; background-color: #ffe6e6; border: 1px solid red; border-radius: 4px;" th:text="${error}">
+                Error message
+            </div>
+            <form action="/book-event" method="post" class="booking-form">
+                <input type="hidden" name="hostId" th:value="${host.id}">
+                <input type="hidden" name="datetime" th:value="${datetime}">
+                <input th:if="${eventTypeId != null}" type="hidden" name="eventTypeId" th:value="${eventTypeId}">
+                
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" name="inviteeName" required class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="inviteeEmail" required class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Please share anything that will help prepare for our meeting.</label>
+                    <textarea id="message" name="message" rows="4" class="form-control"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary submit-btn">Schedule Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

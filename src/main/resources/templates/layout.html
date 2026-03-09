@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendly Clone</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo-icon">C</span>
+            Calendly
+        </div>
+        <div class="nav-links">
+            <div th:if="${session.userId != null}" style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Removed Redundant Header Button (Prompting moved to Dashboard Modal) -->
+                
+                <a th:href="@{/dashboard(userId=${session.userId})}" style="font-weight: 500; text-decoration: none; color: inherit;">Dashboard</a>
+                <a th:href="@{/settings/profile(userId=${session.userId})}" style="font-weight: 500; text-decoration: none; color: inherit;">Settings</a>
+                <a th:href="@{/logout}" class="btn btn-outline btn-sm">Log Out</a>
+
+            </div>
+            <div th:unless="${session.userId != null}" style="display: flex; align-items: center; gap: 1.5rem;">
+                <a th:href="@{/login}" style="font-weight: 600;">Log In</a>
+                <a th:href="@{/register}" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+    <div th:replace="${content}"></div>
+</body>
+</html>

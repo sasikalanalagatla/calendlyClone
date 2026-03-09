@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Vote: <span th:text="${poll.title}">Poll</span> - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content">
+    <div class="card" style="max-width: 600px; margin: 0 auto; padding: 2rem; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <div th:if="${host != null}" class="host-avatar" style="margin: 0 auto 1rem; width: 64px; height: 64px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;" th:text="${host.name.substring(0,2).toUpperCase()}">JD</div>
+            <h1 th:text="${poll.title}">Meeting Title</h1>
+            <p th:text="${poll.description}" style="color: var(--text-gray);">Description</p>
+        </header>
+
+        <form action="/polls/vote" method="post">
+            <input type="hidden" name="pollId" th:value="${poll.id}">
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="inviteeName" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Your Name *</label>
+                <input type="text" id="inviteeName" name="inviteeName" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="inviteeEmail" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Your Email *</label>
+                <input type="email" id="inviteeEmail" name="inviteeEmail" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            </div>
+
+            <h3 style="margin-bottom: 1rem; font-size: 1.1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">Select the times you are available:</h3>
+            
+            <div class="options-list" style="margin-bottom: 2rem;">
+                <div th:each="opt : ${options}" class="poll-option-card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 0.75rem; transition: var(--transition);">
+                    <input type="checkbox" name="optionIds" th:value="${opt.id}" th:id="'opt-' + ${opt.id}" style="width: 22px; height: 22px; cursor: pointer;">
+                    <label th:for="'opt-' + ${opt.id}" style="flex: 1; cursor: pointer;">
+                        <span th:text="${opt.dateTime}" style="font-weight: 600; display: block; font-size: 1.1rem; color: var(--text-dark);">2026-03-10 10:00</span>
+                        <span th:text="${opt.durationMinutes} + ' minutes'" style="font-size: 0.9rem; color: var(--text-gray);">30 minutes</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1.25rem; font-size: 1.1rem;">Submit My Votes</button>
+        </form>
+    </div>
+</main>
+<style>
+    .poll-option-card:hover {
+        background-color: #f0f7ff;
+        border-color: var(--primary-color);
+    }
+</style>
+</body>
+</html>

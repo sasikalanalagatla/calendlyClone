@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::main})}">
+<head>
+    <title>Profile Settings - Calendly Clone</title>
+</head>
+<body>
+<main class="main-content">
+    <div class="dashboard-header">
+        <h1>Account settings</h1>
+    </div>
+
+    <div class="settings-container">
+        <!-- Sidebar Navigation -->
+        <aside class="settings-sidebar">
+            <nav class="settings-nav">
+                <a href="#" class="settings-nav-item active">
+                    <span class="icon">👤</span> Profile
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Profile Form Content -->
+        <section class="settings-content">
+            <h2 style="font-size: 1.25rem; margin-bottom: 2rem;">Profile Details</h2>
+            
+            <form th:action="@{/settings/profile/update}" method="post" enctype="multipart/form-data" class="settings-form">
+                <input type="hidden" name="userId" th:value="${user.id}">
+                
+                <!-- Profile Picture Section -->
+                <div class="profile-pic-section">
+                    <div class="profile-pic-container">
+                        <img th:if="${user.profilePicture}" th:src="${user.profilePicture}" alt="Profile Picture">
+                        <div th:unless="${user.profilePicture}" class="profile-pic-placeholder" th:text="${user.name.length() >= 2 ? user.name.substring(0,2).toUpperCase() : user.name.toUpperCase()}">SA</div>
+                    </div>
+                    <div>
+                        <h3 th:text="${user.name}" style="margin: 0; font-size: 1.25rem;">Sasikala</h3>
+                        <p style="margin: 0 0 1rem; color: #666; font-size: 0.9rem;">calendly.com/<span th:text="${user.username}"></span></p>
+                        
+                        <input type="file" id="profilePicInput" name="profilePic" accept="image/png, image/jpeg, image/gif" style="display: none;" onchange="updateFileName()">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('profilePicInput').click()">Upload picture</button>
+                        <p class="upload-info">JPG, GIF or PNG. Max size of 5MB.</p>
+                        <span id="fileNameDisplay" style="font-size: 0.8rem; color: var(--primary-color);"></span>
+                    </div>
+                </div>
+
+                <!-- Meeting Preferences Section -->
+                <div class="form-group" style="background: #ffffff; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; margin-bottom: 2.5rem;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Meeting Preferences</h3>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Personal Google Meet Link</label>
+                        <input type="url" name="googleMeetLink" class="form-control" th:value="${user.googleMeetLink}" placeholder="https://meet.google.com/abc-defg-hij" style="margin-bottom: 10px;">
+                        <p style="font-size: 0.85rem; color: #666; margin-bottom: 0;">
+                            Setting this link ensures that all "Google Meet" events you create will use this working URL.
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- Calendar Connection Section -->
+                <div class="form-group" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; margin-bottom: 2.5rem;">
+                    <label style="margin-bottom: 1rem;">Google Calendar Connection</label>
+                    <div th:if="${googleConnected}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.5rem;">✅</span>
+                            <div>
+                                <strong style="display: block; font-size: 0.95rem;">Successfully Connected</strong>
+                                <span style="font-size: 0.85rem; color: #666;">Meetings will sync to your primary calendar.</span>
+                            </div>
+                        </div>
+                        <a href="/oauth2/authorization/google" class="btn btn-outline btn-sm" style="font-size: 0.75rem;">Reconnect</a>
+                    </div>
+                    <div th:unless="${googleConnected}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 2rem; opacity: 0.5;">🗓️</span>
+                            <div>
+                                <strong style="display: block; font-size: 0.95rem;">Not Connected</strong>
+                                <span style="font-size: 0.85rem; color: #666;">Connect to sync meetings and send invites.</span>
+                            </div>
+                        </div>
+                        <a href="/oauth2/authorization/google" class="btn btn-primary btn-sm">Connect Now</a>
+                    </div>
+                </div>
+
+                <!-- Name Field -->
+                <div class="form-group">
+                    <label>Name <span class="label-info-icon" title="This name will be displayed to guests.">ⓘ</span></label>
+                    <input type="text" name="name" th:value="${user.name}" class="form-control" required>
+                </div>
+
+                <!-- Welcome Message Field -->
+                <div class="form-group">
+                    <label>Welcome Message <span class="label-info-icon" title="This message will be shown on your public booking page.">ⓘ</span></label>
+                    <textarea name="welcomeMessage" th:text="${user.welcomeMessage}" class="form-control" rows="4" placeholder="Welcome to my scheduling page. Please follow the instructions to add an event to my calendar."></textarea>
+                </div>
+
+
+                <!-- Language Field -->
+                <div class="form-group">
+                    <label>Language</label>
+                    <select name="language" class="form-control">
+                        <option value="English" th:selected="${user.language == 'English'}">English</option>
+                        <option value="Spanish" th:selected="${user.language == 'Spanish'}">Spanish</option>
+                        <option value="French" th:selected="${user.language == 'French'}">French</option>
+                        <option value="German" th:selected="${user.language == 'German'}">German</option>
+                    </select>
+                </div>
+
+                <!-- Date and Time Format -->
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
+                    <div style="flex: 1;">
+                        <label>Date Format <span class="label-info-icon" title="How dates appear to your guests.">ⓘ</span></label>
+                        <select name="dateFormat" class="form-control">
+                            <option value="DD/MM/YYYY" th:selected="${user.dateFormat == 'DD/MM/YYYY'}">DD/MM/YYYY</option>
+                            <option value="MM/DD/YYYY" th:selected="${user.dateFormat == 'MM/DD/YYYY'}">MM/DD/YYYY</option>
+                            <option value="YYYY-MM-DD" th:selected="${user.dateFormat == 'YYYY-MM-DD'}">YYYY-MM-DD</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Time Format <span class="label-info-icon" title="12-hour or 24-hour clock.">ⓘ</span></label>
+                        <select name="timeFormat" class="form-control">
+                            <option value="12h" th:selected="${user.timeFormat == '12h'}">12h (am/pm)</option>
+                            <option value="24h" th:selected="${user.timeFormat == '24h'}">24h</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Country -->
+                <div class="form-group">
+                    <label>Country</label>
+                    <select name="country" class="form-control">
+                        <option value="India" th:selected="${user.country == 'India'}">India</option>
+                        <option value="United States" th:selected="${user.country == 'United States'}">United States</option>
+                        <option value="United Kingdom" th:selected="${user.country == 'United Kingdom'}">United Kingdom</option>
+                        <option value="Canada" th:selected="${user.country == 'Canada'}">Canada</option>
+                    </select>
+                </div>
+
+                <!-- Time Zone Display (Existing field) -->
+                <div class="form-group">
+                    <div class="time-zone-display">
+                        <label>Time Zone</label>
+                        <span th:text="'Current Time: ' + ${#calendars.format(#calendars.createNow(), 'h:mma')}">2:37pm</span>
+                    </div>
+                    <select name="time_zone" class="form-control">
+                        <option value="Asia/Kolkata" th:selected="${user.time_zone == 'Asia/Kolkata'}">India Standard Time (Asia/Kolkata)</option>
+                        <option value="UTC" th:selected="${user.time_zone == 'UTC'}">UTC (Coordinated Universal Time)</option>
+                        <option value="America/New_York" th:selected="${user.time_zone == 'America/New_York'}">Eastern Time (America/New_York)</option>
+                        <option value="Europe/London" th:selected="${user.time_zone == 'Europe/London'}">GMT (Europe/London)</option>
+                    </select>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a th:href="@{/dashboard(userId=${user.id})}" class="btn btn-outline" style="border-color: #ccc; color: #666;">Cancel</a>
+                    
+                    <button type="button" class="btn btn-danger" style="margin-left: auto;">Delete Account</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        function updateFileName() {
+            const input = document.getElementById('profilePicInput');
+            const display = document.getElementById('fileNameDisplay');
+            if (input.files.length > 0) {
+                display.textContent = 'Selected: ' + input.files[0].name;
+            }
+        }
+    </script>
+</main>
+</body>
+</html>
