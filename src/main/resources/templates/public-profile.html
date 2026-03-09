@@ -37,6 +37,28 @@
             <div th:unless="${eventType != null}">
                 <h1 class="event-name">All Availability</h1>
                 <p class="event-desc">Select a time to book with <span th:text="${host.name}">Host</span>.</p>
+                
+                <div style="margin-top: 2rem;">
+                    <div th:each="et : ${eventTypes}" style="margin-bottom: 1rem;">
+                        <a th:href="@{/{username}(username=${host.username}, eventTypeId=${et.id})}" 
+                           style="display: block; padding: 1.5rem; background: white; border: 1px solid var(--border-color); border-radius: 8px; text-decoration: none; color: inherit; transition: box-shadow 0.2s, border-color 0.2s;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h3 style="margin: 0 0 0.5rem 0;" th:text="${et.title}">Event Title</h3>
+                                    <div style="color: #666; font-size: 0.9rem;">
+                                        <span th:text="${et.durationMinutes} + ' min'">30 min</span>
+                                        <span style="margin: 0 8px;">•</span>
+                                        <span th:text="${et.location}">Location</span>
+                                    </div>
+                                </div>
+                                <div style="color: var(--primary-color); font-size: 1.2rem;">→</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div th:if="${eventTypes == null or eventTypes.empty}" style="color: #666; font-style: italic;">
+                        This host hasn't created any event types yet.
+                    </div>
+                </div>
             </div>
         </div>
 

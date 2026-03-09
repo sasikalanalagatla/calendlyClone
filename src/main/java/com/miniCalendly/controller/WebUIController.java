@@ -311,14 +311,6 @@ public class WebUIController {
                                 HttpSession session,
                                 Model model) {
         Long loggedInUserId = (Long) session.getAttribute("userId");
-        if (loggedInUserId == null) {
-            String currentUrl = request.getRequestURI();
-            String queryString = request.getQueryString();
-            if (queryString != null) {
-                currentUrl += "?" + queryString;
-            }
-            return "redirect:/login?redirectUrl=" + java.net.URLEncoder.encode(currentUrl, java.nio.charset.StandardCharsets.UTF_8);
-        }
 
         List<User> users = userRepository.findAll();
         User host = null;
@@ -395,6 +387,10 @@ public class WebUIController {
         } else {
             List<Opening> openings = (List<Opening>) openingRepository.findAllByOwner(host.getId());
             model.addAttribute("openings", openings);
+            
+            // Add all event types for this host so they can choose one
+            List<EventType> eventTypes = eventTypeRepository.findByUserId(host.getId());
+            model.addAttribute("eventTypes", eventTypes);
         }
 
         return "public-profile";
@@ -407,16 +403,6 @@ public class WebUIController {
                               javax.servlet.http.HttpServletRequest request,
                               HttpSession session, 
                               Model model) {
-        Long loggedInUserId = (Long) session.getAttribute("userId");
-        if (loggedInUserId == null) {
-            String currentUrl = request.getRequestURI();
-            String queryString = request.getQueryString();
-            if (queryString != null) {
-                currentUrl += "?" + queryString;
-            }
-            return "redirect:/login?redirectUrl=" + java.net.URLEncoder.encode(currentUrl, java.nio.charset.StandardCharsets.UTF_8);
-        }
-
         User host = userRepository.findByUsername(username).orElse(null);
         if (host == null) {
             return "redirect:/";
