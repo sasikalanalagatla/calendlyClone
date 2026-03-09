@@ -6,7 +6,7 @@
 <body>
 <main class="main-content">
     <div class="dashboard-header" style="align-items: flex-start;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
             <div class="profile-pic-container" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background-color: #f0f4f8; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
                 <img th:if="${user.profilePicture}" th:src="${user.profilePicture}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
                 <span th:unless="${user.profilePicture}" th:text="${user.name.substring(0,1).toUpperCase()}" style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);">U</span>
@@ -18,7 +18,7 @@
                 </div>
             </div>
         </div>
-        <button class="btn btn-outline btn-sm copy-link-btn" th:attr="data-url='http://localhost:8080/' + ${user.username}">Copy link</button>
+            <button class="btn btn-outline btn-sm copy-link-btn" th:attr="data-url=${appBaseUrl} + '/' + ${user.username}">Copy link</button>
     </div>
 
     
@@ -56,7 +56,7 @@
                         </p>
                         <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
                             <a th:href="@{'/' + ${user.username} + '?eventTypeId=' + ${et.id}}" class="view-booking-link">View booking page</a>
-                            <button class="btn btn-outline btn-sm copy-link-btn" th:attr="data-url='http://localhost:8080/' + ${user.username} + '?eventTypeId=' + ${et.id}">Copy link</button>
+                            <button class="btn btn-outline btn-sm copy-link-btn" th:attr="data-url=${appBaseUrl} + '/' + ${user.username} + '?eventTypeId=' + ${et.id}">Copy link</button>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -88,7 +88,7 @@
                             <div style="display: flex; gap: 10px; align-items: center; margin-top: 1.5rem;">
                                 <a th:href="@{/polls/{id}/results(id=${p.id})}" class="btn btn-primary btn-sm" style="font-size: 0.75rem;">View Results</a>
                                 <button class="btn btn-outline btn-sm copy-link-btn" 
-                                        th:attr="data-url='http://localhost:8080/polls/' + ${p.id} + '/vote'" 
+                                        th:attr="data-url=${appBaseUrl} + '/polls/' + ${p.id} + '/vote'" 
                                         style="font-size: 0.75rem;">Copy Vote Link</button>
                             </div>
                         </div>
